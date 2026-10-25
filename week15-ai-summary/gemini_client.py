@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from urllib import error, request
 
 MAX_INPUT_CHARS = 12_000
-DEFAULT_MODEL = "gemini-2.5-flash"
+DEFAULT_MODEL = "gemini-3.5-flash-lite"
 API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models"
 
 
@@ -79,7 +79,7 @@ def gemini_summary(text: str, style: str = "핵심 3줄", *, api_key: str | None
         raise SummaryError("모델 이름 형식이 올바르지 않습니다.")
     payload = {
         "contents": [{"parts": [{"text": _prompt_for(style, clean)}]}],
-        "generationConfig": {"temperature": 0.2, "maxOutputTokens": 600},
+        "generationConfig": {"maxOutputTokens": 1024},
     }
     req = request.Request(
         f"{API_ROOT}/{model_name}:generateContent",
@@ -91,7 +91,7 @@ def gemini_summary(text: str, style: str = "핵심 3줄", *, api_key: str | None
         with request.urlopen(req, timeout=35) as resp:
             data = json.load(resp)
     except error.HTTPError as exc:
-        reasons = {400: "요청 형식 또는 모델 설정을 확인해 주세요.", 401: "API 키를 확인해 주세요.", 403: "API 사용 권한이나 결제 설정을 확인해 주세요.", 404: "모델 이름을 확인해 주세요.", 429: "요청 한도를 초과했습니다. 잠시 후 다시 시도해 주세요."}
+        reasons = {400: "요청 형식 또는 모델 설정을 확인해 주세요.", 401: "API 키를 확인해 주세요.", 403: "API 사용 권한이나 결제 설정을 확인해 주세요.", 404: f"모델 {model_name}에 접근할 수 없습니다. Google AI Studio에서 사용할 수 있는 모델을 확인해 주세요.", 429: "요청 한도를 초과했습니다. 잠시 후 다시 시도해 주세요."}
         raise SummaryError(f"Gemini API 오류({exc.code}): {reasons.get(exc.code, '서비스 상태를 확인해 주세요.')}") from None
     except (TimeoutError, OSError, ValueError) as exc:
         raise SummaryError("외부 AI 서비스에 연결하지 못했습니다. 인터넷 연결을 확인해 주세요.") from exc
