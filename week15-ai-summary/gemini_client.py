@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from urllib import error, request
 
 MAX_INPUT_CHARS = 12_000
-DEFAULT_MODEL = "gemini-3.5-flash-lite"
+DEFAULT_MODEL = "gemini-2.5-flash"
 API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models"
 
 
